@@ -1,0 +1,154 @@
+jenkins:
+  agentProtocols:
+    - "JNLP4-connect"
+    - "Ping"
+  authorizationStrategy:
+    roleBased:
+      roles:
+        global:
+          - name: "admin"
+            permissions:
+              - "Overall/Administer"
+          - name: "developer"
+            permissions:
+              - "Job/Build"
+              - "Job/Cancel"
+              - "Run/Delete"
+              - "Run/Update"
+          - name: "viewer"
+            permissions:
+              - "Job/ExtendedRead"
+              - "Run/Replay"
+  crumbIssuer:
+    standard:
+      excludeClientIPFromCrumb: true
+  remotingSecurity:
+    enabled: true
+  securityRealm:
+    saml:
+      displayNameAttributeName: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname"
+      groupsAttributeName: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/groups"
+      idpMetadataConfiguration:
+        url: "https://your-idp/metadata"
+      mailAttributeName: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress"
+      usernameAttributeName: "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"
+
+  securityImpliedOAuth2:
+    authorizationStrategy: "projectMatrix"
+
+  remotingCLI:
+    enabled: false
+
+unclassified:
+  emailext:
+    adminRequiredForTemplateTesting: false
+    allowUnregisteredEnabled: false
+    charset: "UTF-8"
+    debug: false
+    defaultBody: |
+      $PROJECT_NAME - Build # $BUILD_NUMBER - $BUILD_STATUS:
+
+      Check console output at $BUILD_URL to view the results.
+    defaultContentType: "text/html"
+    defaultSubject: "$PROJECT_NAME - Build #$BUILD_NUMBER - $BUILD_STATUS!"
+    defaultTriggerIds:
+      - "hudson.plugins.emailext.plugins.trigger.FailureTrigger"
+    maxAttachmentSize: -1
+    maxAttachmentSizeMb: 0
+    mimeType: "text/html"
+    precedenceBulk: false
+    precedenceList: false
+    smtpAuthenticationMechanism: "default"
+    smtpDebug: false
+    smtpHost: "smtp.gmail.com"
+    smtpPort: "587"
+    smtpUseSSL: false
+    smtpUseStartTLS: true
+    useSendEmail: false
+    watcherDebugAddresses: ""
+    watcherDebugCategories: ""
+
+  location:
+    url: "http://localhost:8082/"
+
+  timestamper:
+    allPipelines: true
+    elapsedTimeFormat: "'['HH:mm:ss.S']'"
+    systemTimeFormat: "'['yyyy-MM-dd HH:mm:ss']'"
+
+  docker:
+    apiVersion: "1.40"
+    dockerHost:
+      dockerHostname: "unix:///var/run/docker.sock"
+      exposeDockerHost: false
+
+  gitHub:
+    cachingStrategy: "recently_updated_expiration_caching_strategy"
+    clientCacheSize: 20
+    connectTimeout: 10
+    manageHooks: true
+    readTimeout: 10
+
+  gitHubPluginConfig:
+    apiRateLimitChecker: ThrottleAtAbsoluteLimit
+    hookSecureMode: true
+    hookUrl: "http://localhost:8082/github-webhook/"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - github:
+              scope: GLOBAL
+              id: "github-credentials"
+              username: "${GITHUB_USERNAME}"
+              password: "${GITHUB_TOKEN}"
+              description: "GitHub Credentials for ZLC"
+
+          - usernamePassword:
+              scope: GLOBAL
+              id: "docker-hub-credentials"
+              username: "${DOCKER_HUB_USERNAME}"
+              password: "${DOCKER_HUB_PASSWORD}"
+              description: "Docker Hub Credentials"
+
+          - aws:
+              scope: GLOBAL
+              id: "aws-credentials"
+              accessKey: "${AWS_ACCESS_KEY_ID}"
+              secretKey: "${AWS_SECRET_ACCESS_KEY}"
+              description: "AWS Credentials for Deployment"
+
+jobs:
+  - script: >
+      pipelineJob('zlc-pipeline') {
+        description('ZLC Authentication System CI/CD Pipeline')
+        definition {
+          cpsScm {
+            scm {
+              git {
+                remote {
+                  url('https://github.com/zenycahoy23-blip/ZLC.git')
+                  credentials('github-credentials')
+                }
+                branches('*/main')
+              }
+            }
+            scriptPath('Jenkinsfile')
+          }
+        }
+        triggers {
+          githubPush()
+          pollSCM('H/15 * * * *')
+        }
+        properties {
+          buildDiscarder {
+            strategy {
+              logRotator {
+                daysToKeepStr('-1')
+                numToKeepStr('10')
+              }
+            }
+          }
+        }
+      }

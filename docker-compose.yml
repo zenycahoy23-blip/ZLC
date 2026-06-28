@@ -1,0 +1,139 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-zlc
+    environment:
+      POSTGRES_USER: ${DB_USER:-authuser}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-authpass}
+      POSTGRES_DB: ${DB_NAME:-authdb}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    ports:
+      - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U authuser -d authdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - zlc-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend-zlc
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-authuser}
+      DB_PASSWORD: ${DB_PASSWORD:-authpass}
+      DB_NAME: ${DB_NAME:-authdb}
+      JWT_SECRET: ${JWT_SECRET:-change-this-secret-in-production}
+      SMTP_HOST: ${SMTP_HOST:-smtp.gmail.com}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+      SMTP_FROM: ${SMTP_FROM:-noreply@gmail.com}
+      OTP_EXPIRY: ${OTP_EXPIRY:-300}
+    ports:
+      - "8084:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - zlc-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8084
+    container_name: frontend-zlc
+    ports:
+      - "9031:5173"
+    environment:
+      VITE_API_URL: http://localhost:8084
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - zlc-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus-zlc
+    volumes:
+      - ./prometheus-config.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9092:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - zlc-network
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-zlc
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin123
+      GF_INSTALL_PLUGINS: ''
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+    ports:
+      - "3002:3000"
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - zlc-network
+
+  jenkins:
+    build:
+      context: ./jenkins
+      dockerfile: Dockerfile
+    container_name: jenkins-zlc
+    privileged: true
+    user: root
+    ports:
+      - "8082:8080"
+      - "50001:50000"
+    environment:
+      JENKINS_OPTS: "-Djenkins.install.runSetupWizard=false"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/cli/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - zlc-network
+
+volumes:
+  postgres_data:
+  prometheus_data:
+  grafana_data:
+  jenkins_home:
+
+networks:
+  zlc-network:
+    driver: bridge

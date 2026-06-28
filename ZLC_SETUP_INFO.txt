@@ -1,0 +1,120 @@
+ZLC SYSTEM - Configuration Summary
+===================================
+
+✅ SYSTEM REBRANDING COMPLETED
+- System renamed from "UnoReverse" to "ZLC"
+- All container names updated (uno → zlc)
+- Network renamed to "zlc-network"
+
+✅ SMTP CREDENTIALS UPDATED
+- Email: zenycahoy23@gmail.com
+- App: ZLC
+- App Password: jquq chgi wzsy jjfq
+- Configured in .env file
+
+✅ DESIGN CHANGES APPLIED
+New color scheme: Professional blue-to-purple gradient
+- Old: #667eea → #764ba2 (light purple)
+- New: #1e3c72 → #2a5298 → #7e22ce (deep blue to vibrant purple)
+- Frontend updated to modern "Segoe UI" font family
+
+✅ PORT CONFIGURATION
+- Database (PostgreSQL): 5434 (previously 5433)
+- Backend API: 8084 (previously 8083)
+- Frontend UI: 9031 (previously 9030)
+- Prometheus: 9092 (previously 9091)
+- Grafana: 3002 (previously 3001)
+- Jenkins: 8082 (previously 8081)
+- Jenkins Worker: 50001 (previously 50000)
+
+✅ FILES UPDATED
+- .env (SMTP credentials)
+- docker-compose.yml (all services renamed)
+- README.md (complete rebranding to ZLC)
+- frontend/index.html (new title, new design colors)
+- frontend/package.json (name updated)
+- frontend/src/App.svelte (new color scheme)
+
+✅ DEPENDENCIES INSTALLED
+- Frontend npm packages: installed (36 packages)
+- Backend Go modules: configured in go.mod
+
+🏗️ BUILD STATUS
+Docker images currently building...
+
+QUICK START (After build completes)
+==================================
+
+1. Start all services:
+   docker compose up
+
+2. Access the system:
+   - Frontend: http://localhost:9031
+   - Backend API: http://localhost:8084
+   - Grafana: http://localhost:3002 (admin/admin123)
+   - Jenkins: http://localhost:8082
+   - Prometheus: http://localhost:9092
+
+3. Database connection:
+   - Host: postgres
+   - Port: 5434
+   - User: authuser
+   - Password: authpass
+   - Database: authdb
+
+4. Default Admin Account:
+   - Email: cliffe026@gmail.com
+   - Password: admin123
+   ⚠️  Change in production!
+
+SECURITY FEATURES
+=================
+✓ Email verification with OTP
+✓ Phone verification with SMS codes
+✓ Account lockout after failed attempts
+✓ Audit logging with IP & device tracking
+✓ JWT token authentication
+✓ Bcrypt password encryption
+✓ Role-based access control (Admin/Moderator/User)
+✓ Password change history
+✓ Login history tracking
+
+MONITORING STACK
+================
+✓ Prometheus: Metrics collection (port 9092)
+✓ Grafana: Visualization & dashboards (port 3002)
+✓ Jenkins: CI/CD pipelines (port 8082)
+
+SERVICE ARCHITECTURE
+====================
+Frontend (Svelte, port 9031)
+        ↓
+Backend (Go, port 8084)
+        ↓
+PostgreSQL (port 5434)
+        ↓
+Prometheus (port 9092)
+        ↓
+Grafana (port 3002)
+
++ Jenkins (port 8082) for automation
+
+NEXT STEPS
+==========
+1. Wait for Docker build to complete
+2. Run: docker compose up
+3. Access http://localhost:9031
+4. Test login with admin account
+5. Update admin credentials in production
+6. Configure Grafana dashboards
+7. Set up Jenkins pipelines
+
+TROUBLESHOOTING
+===============
+If containers don't start:
+- Check Docker daemon: docker info
+- View logs: docker compose logs -f [service_name]
+- Verify ports: netstat -tulpn
+- Reset: docker compose down -v && docker compose up
+
+Contact: zenycahoy23@gmail.com (configured for system emails)
