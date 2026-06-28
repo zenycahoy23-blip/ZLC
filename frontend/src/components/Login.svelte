@@ -19,7 +19,7 @@
     loading = true
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8084'
       const response = await fetch(`${apiUrl}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

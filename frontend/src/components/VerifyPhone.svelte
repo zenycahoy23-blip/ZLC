@@ -23,7 +23,7 @@
     loading = true
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8084'
       const response = await fetch(`${apiUrl}/api/verify-phone-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,7 +50,7 @@
     resendLoading = true
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8083'
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8084'
       const response = await fetch(`${apiUrl}/api/resend-phone-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

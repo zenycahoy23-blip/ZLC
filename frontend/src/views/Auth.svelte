@@ -47,8 +47,8 @@
 <div class="auth-container">
   <div class="auth-header">
     <div class="logo-section">
-      <span class="logo-icon">🔄</span>
-      <h1>Uno Reverse</h1>
+      <span class="logo-icon">🔐</span>
+      <h1>ZLC</h1>
       <p class="tagline">Secure Authentication & RBAC System</p>
     </div>
   </div>
@@ -76,7 +76,7 @@
     align-items: center;
     min-height: 100vh;
     padding: 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%);
     animation: fadeIn 0.6s ease-out;
   }
 
